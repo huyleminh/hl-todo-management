@@ -14,16 +14,18 @@ export default class AuthDomainModel implements IBaseModelInstance {
 		this.createdDate = createdDate;
 	}
 
-	insert(): string | number | void {}
+	async insert() {}
 
-	delete(): number | void {}
+	async delete() {}
 
-	update(): string | number | void {}
+	async update() {}
 
 	static getAllAsync() {
 		return new Promise(async function (resolve, reject) {
 			try {
-				const resultSet = await DbConnection<AuthDomainModel>(AuthDomainModel.TABLE_NAME).select();
+				const resultSet = await DbConnection<AuthDomainModel>(
+					AuthDomainModel.TABLE_NAME,
+				).select();
 				resolve(resultSet);
 			} catch (error) {
 				reject(error);

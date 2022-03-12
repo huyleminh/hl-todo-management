@@ -11,7 +11,7 @@ const transport = new winston.transports.DailyRotateFile({
 });
 
 const msgFormat = winston.format.printf(({ level, message, timestamp }) => {
-    return `[${timestamp}] : [${level}] : ${message}\r\n`;
+    return `[${timestamp}] : [${level}] : ${message}`;
 });
 
 const Logger = winston.createLogger({

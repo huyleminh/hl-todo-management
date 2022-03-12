@@ -1,5 +1,5 @@
 export interface IBaseModelInstance {
-	insert(): void | number | string;
-	delete(): void | number;
-	update(): void | number | string;
+	insert(): Promise<void | number>;
+	delete(): Promise<void | number>;
+	update(): Promise<void | number>;
 }

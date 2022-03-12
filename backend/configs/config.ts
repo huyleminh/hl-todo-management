@@ -22,6 +22,10 @@ export class AppConfigs {
 	static get JWT_REFRESH(): string {
 		return process.env.JWT_REFRESH_SECRET ? process.env.JWT_REFRESH_SECRET : "";
 	}
+
+	static get JWT_ID_TOKEN(): string {
+		return process.env.JWT_ID_TOKEN_SECRET ? process.env.JWT_ID_TOKEN_SECRET : "";
+	}
 }
 
 export class DBConfigs {
@@ -43,5 +47,11 @@ export class DBConfigs {
 
 	static get DB_PORT(): number {
 		return process.env.DB_PORT ? +process.env.DB_PORT : 3306;
+	}
+}
+
+export class GoggleConfigs {
+	static get GOOGLE_AUTH_CLIENT_ID(): string {
+		return process.env.GOOGLE_AUTH_CLIENT_ID || "";
 	}
 }
