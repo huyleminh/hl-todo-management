@@ -1,7 +1,7 @@
 import CloseIcon from "@mui/icons-material/Close";
+import EmailRoundedIcon from '@mui/icons-material/EmailRounded';
 import HelpOutlineRoundedIcon from "@mui/icons-material/HelpOutlineRounded";
 import KeyRoundedIcon from "@mui/icons-material/KeyRounded";
-import PersonOutlineRoundedIcon from "@mui/icons-material/PersonOutlineRounded";
 import {
 	Alert,
 	Button,
@@ -21,11 +21,14 @@ import InputAdornment from "@mui/material/InputAdornment";
 import TextField from "@mui/material/TextField";
 import { Box } from "@mui/system";
 import React, { useState } from "react";
+import { GoogleLogin } from "react-google-login";
 import { useNavigate } from "react-router-dom";
+import googleIcon from "../../../assets/images/google.svg";
 import loginImage from "../../../assets/images/login.svg";
 import AppSnackBar from "../../../components/SnackBar/AppSnackBar";
+import AppConfigs from "../../../configs/AppConfigs";
 import AuthService from "../../../services/AuthService";
-import { ILoginResponse, IUserLogin } from "../../../types/AuthModels";
+import { IGoogleLoginResponse, ILoginResponse, IUserLogin } from "../../../types/AuthModels";
 
 function LoginPage() {
 	const navigate = useNavigate();
@@ -33,17 +36,11 @@ function LoginPage() {
 	const [isLoading, setIsLoading] = useState(false);
 	const [isShowSnackBar, setIsShowSnackBar] = useState(false);
 
-	const [userLogin, setUserLogin] = useState<IUserLogin>({
-		username: "",
-		password: "",
-	});
+	const [userLogin, setUserLogin] = useState<IUserLogin>({ email: "", password: "" });
 
-	const [userLoginError, setUserLoginError] = useState({
-		username: false,
-		password: false,
-	});
+	const [userLoginError, setUserLoginError] = useState({ email: false, password: false });
 
-	const [openAlert, setOpenAlert] = useState(false);
+	const [alert, setAlert] = useState({ open: false, msg: "" });
 
 	const handleChangeField = (event: React.ChangeEvent<HTMLInputElement>) => {
 		const target = event.target;
@@ -56,25 +53,20 @@ function LoginPage() {
 
 	const handleSubmit = async (event: React.SyntheticEvent) => {
 		event.preventDefault();
-		if (userLoginError.username || userLoginError.password) {
+		if (userLoginError.email || userLoginError.password) {
 			return;
 		}
 
 		setIsLoading(true);
-
 		try {
-			const response = await AuthService.postLoginAsync(
-				userLogin.username,
-				userLogin.password,
-			);
-
+			const response = await AuthService.postLoginAsync(userLogin.email, userLogin.password);
 			setIsLoading(false);
 
 			if (response.statusCode === 200) {
 				AuthService.setLocalData(response.data as ILoginResponse);
 				navigate("/");
-			} else if (response.statusCode === 401) {
-				setOpenAlert(true);
+			} else if (response.statusCode === 400) {
+				setAlert({ ...alert, open: true, msg: "Email hoặc mật khẩu không hợp lệ" });
 			} else if (response.statusCode === 500) {
 				setIsShowSnackBar(true);
 			}
@@ -107,6 +99,44 @@ function LoginPage() {
 		});
 	};
 
+	const responseOk = async (response: any) => {
+		try {
+			// console.log(response);
+			const res = await AuthService.getLoginGoogleAsync(
+				response.tokenObj.id_token,
+				response.tokenObj.token_type,
+			);
+
+			if (res.statusCode === 200) {
+				AuthService.setGoogleLocalData(res.data as IGoogleLoginResponse);
+				navigate("/");
+			} else if (res.statusCode === 401) {
+				setAlert({
+					...alert,
+					open: true,
+					msg: "Không thể xác thực tài khoản Google, vui lòng thử lại sau",
+				});
+			} else if (res.statusCode === 500) {
+				setIsShowSnackBar(true);
+			}
+		} catch (error) {
+			console.log(error);
+			setIsShowSnackBar(true);
+		}
+	};
+
+	const responseFailure = (response: any) => {
+		// console.log(response);
+		if (response.error === "popup_closed_by_user") {
+			return;
+		}
+		setAlert({
+			...alert,
+			open: true,
+			msg: "Không thể xác thực tài khoản Google, vui lòng thử lại sau",
+		});
+	};
+
 	return (
 		<Box
 			className="wrapper"
@@ -135,7 +165,7 @@ function LoginPage() {
 							}}
 						>
 							<Stack direction="column" sx={{ marginBottom: 4 }}>
-								<Collapse in={openAlert}>
+								<Collapse in={alert.open}>
 									<Alert
 										severity="warning"
 										action={
@@ -144,7 +174,7 @@ function LoginPage() {
 												color="inherit"
 												size="small"
 												onClick={() => {
-													setOpenAlert(false);
+													setAlert({ open: false, msg: "" });
 												}}
 											>
 												<CloseIcon fontSize="inherit" />
@@ -152,7 +182,7 @@ function LoginPage() {
 										}
 										sx={{ mb: 2 }}
 									>
-										Tên đăng nhập hoặc mật khẩu không hợp lệ
+										{alert.msg}
 									</Alert>
 								</Collapse>
 								<Typography variant="h3" component="h3" sx={{ marginBottom: 2 }}>
@@ -171,28 +201,30 @@ function LoginPage() {
 							</Stack>
 
 							<form onSubmit={handleSubmit}>
-								<Stack direction="column" sx={{ marginBottom: 4 }}>
+								<Stack direction="column" sx={{ marginBottom: 2 }}>
 									<TextField
-										label="Tên đăng nhập"
+										label="Email"
 										variant="filled"
-										type="text"
+										type="email"
 										required
 										sx={{ marginBottom: 4 }}
 										InputProps={{
 											endAdornment: (
 												<InputAdornment position="end">
-													<PersonOutlineRoundedIcon />
+													<EmailRoundedIcon />
 												</InputAdornment>
 											),
 										}}
-										name="username"
-										value={userLogin.username}
+										name="email"
+										value={userLogin.email}
 										onChange={handleChangeField}
-										error={userLoginError.username}
+										error={userLoginError.email}
 										onBlur={handleValidateField}
+										inputProps={{
+											"data-rule": "^[\\w-.]+@([\\w-]+.)+[\\w-]{2,4}$",
+										}}
 										helperText={
-											userLoginError.username &&
-											"Tên đăng nhập không được bỏ trống"
+											userLoginError.email && "Email không đúng định dạng"
 										}
 									/>
 									<TextField
@@ -232,15 +264,17 @@ function LoginPage() {
 															alignItems: "center",
 														}}
 													>
-														<span>Mật khẩu không đúng định dạng</span>
-														<HelpOutlineRoundedIcon />
+														<span style={{ marginRight: "5px" }}>
+															Mật khẩu không đúng định dạng
+														</span>
+														<HelpOutlineRoundedIcon fontSize="small" />
 													</Typography>
 												</Tooltip>
 											)
 										}
 									/>
 									<Typography
-										sx={{ marginBottom: 4 }}
+										sx={{ marginBottom: 2 }}
 										textAlign="start"
 										variant="subtitle2"
 									>
@@ -263,15 +297,38 @@ function LoginPage() {
 								</Stack>
 							</form>
 
-							<Divider textAlign="center" sx={{ color: "#A4AFB9", marginBottom: 4 }}>
+							<Divider textAlign="center" sx={{ color: "#A4AFB9", marginBottom: 2 }}>
 								<Typography variant="subtitle2">Hoặc tiếp tục với</Typography>
 							</Divider>
 
-							{/* <Stack direction="row" spacing={2}>
-									<Button>
-
-									</Button>
-							</Stack> */}
+							<Stack
+								direction="row"
+								spacing={0}
+								sx={{ height: "50px", display: "flex", justifyContent: "center" }}
+							>
+								<GoogleLogin
+									clientId={AppConfigs.GOOGLE_AUTH_CLIENT_ID}
+									onSuccess={responseOk}
+									onFailure={responseFailure}
+									cookiePolicy={"single_host_origin"}
+									render={(renderProps) => (
+										<Button
+											onClick={renderProps.onClick}
+											disabled={renderProps.disabled}
+											sx={{ backgroundColor: "#919eab14" }}
+										>
+											<img
+												src={googleIcon}
+												alt="google_icon"
+												style={{ width: "80%", height: "80%" }}
+											/>
+											<Typography variant="subtitle2" marginLeft={0.5}>
+												Google
+											</Typography>
+										</Button>
+									)}
+								/>
+							</Stack>
 							<AppSnackBar
 								open={isShowSnackBar}
 								message={"Đã có lỗi xảy ra"}

@@ -1,11 +1,27 @@
 export interface IUserLogin {
-	username: string;
+	email: string;
 	password: string;
 }
 
+export interface IUserRegister {
+	email: string;
+	password: string;
+	firstName: string;
+	lastName: string;
+}
+
 export interface ILoginResponse {
-	accesToken: string;
-	expireIn: number;
-	expireAt: number;
+	accessToken: string;
+	expiresIn: number;
+	expiresAt: number;
+	infor: string;
+	refreshToken: string;
+	idToken: string;
+}
+
+export interface IGoogleLoginResponse {
+	accessToken: string;
+	expiresIn: number;
+	expiresAt: number;
 	infor: string;
 }

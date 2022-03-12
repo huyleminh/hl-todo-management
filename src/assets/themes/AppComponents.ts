@@ -6,6 +6,7 @@ export const AppComponents: Components = {
 			root: {
 				borderRadius: "8px",
 				fontSize: "0.875rem",
+				backgroundColor: "#919eab14",
 				"&.Mui-error": {
 					color: "#FF4842",
                     backgroundColor: "#fddad9a6"
