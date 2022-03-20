@@ -232,7 +232,7 @@ function LoginPage() {
 										variant="filled"
 										type="password"
 										required
-										sx={{ marginBottom: 4 }}
+										sx={{ marginBottom: 2 }}
 										InputProps={{
 											endAdornment: (
 												<InputAdornment position="end">

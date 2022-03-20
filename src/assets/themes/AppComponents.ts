@@ -4,12 +4,11 @@ export const AppComponents: Components = {
 	MuiFilledInput: {
 		styleOverrides: {
 			root: {
-				borderRadius: "8px",
 				fontSize: "0.875rem",
 				backgroundColor: "#919eab14",
 				"&.Mui-error": {
 					color: "#FF4842",
-                    backgroundColor: "#fddad9a6"
+					backgroundColor: "#fddad9a6",
 				},
 			},
 			underline: {
@@ -32,8 +31,12 @@ export const AppComponents: Components = {
 	MuiButton: {
 		styleOverrides: {
 			root: {
-				borderRadius: "8px",
+				fontWeight: 600,
+				boxShadow: "none",
 				textTransform: "none",
+				"&:hover": {
+					boxShadow: "none",
+				}
 			},
 		},
 	},
@@ -47,4 +50,22 @@ export const AppComponents: Components = {
 			},
 		},
 	},
+	// MuiAccordion: {
+	// 	styleOverrides: {
+	// 		root: {
+	// 			"&.Mui-expanded": {
+	// 				margin: "0 !important",
+	// 			},
+	// 		},
+	// 	},
+	// },
+	// MuiAccordionSummary: {
+	// 	styleOverrides: {
+	// 		content: {
+	// 			"&.Mui-expanded": {
+	// 				margin: 0,
+	// 			},
+	// 		},
+	// 	},
+	// },
 };
